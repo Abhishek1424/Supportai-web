@@ -1,3 +1,15 @@
+// What is this file?   The gateway for all normal API calls: /api/proxy/<backend path>.
+// Why?                 It adds `Authorization: Bearer <token>` from the cookie, calls
+//   FastAPI,
+//                      and returns the answer. If the token expired it refreshes and
+//                        retries once.
+// Flutter/Dart idea:   like a Dio interceptor that adds the token and handles 401 ->
+//   refresh -> retry.
+//                      The difference: this runs on the Next.js server, so the token stays
+//                        secret.
+//                      `[...path]` means "any number of URL parts", like a wildcard route.
+// Flow:  hook -> apiFetch('/audit-logs') -> /api/proxy/audit-logs -> THIS FILE -> FastAPI
+//   -> back
 /**
  * Authenticated pass-through to the FastAPI backend.
  *
@@ -35,6 +47,7 @@ type Context = { params: Promise<{ path: string[] }> };
  * @param accessToken Bearer token, if we have one.
  * @returns The backend response.
  */
+// One call to FastAPI with the given token. Builds headers, then `backendFetch`.
 function forward(
   backendPath: string,
   search: string,
@@ -63,6 +76,13 @@ function forward(
  * @param context Route params containing the path segments.
  * @returns The backend's answer.
  */
+// Steps:
+//  1. CSRF check and path check.
+//  2. No access cookie but a refresh cookie? Refresh first.
+//  3. Call FastAPI.
+//  4. Got 401? Refresh once and retry once.
+//  5. Return the backend answer. Set new cookies if we refreshed. Clear cookies if refresh
+//    failed.
 async function handle(request: NextRequest, context: Context): Promise<NextResponse> {
   if (!isSameOriginRequest(request.method, request.headers.get("origin"), request.headers.get("host"))) {
     return errorResponse(403, "FORBIDDEN_ORIGIN", "Cross-site request blocked.");
@@ -121,6 +141,7 @@ async function handle(request: NextRequest, context: Context): Promise<NextRespo
  * @param response The backend response.
  * @returns A Headers object to put on our response.
  */
+// Copy only a few safe headers back to the browser (never cookies from the backend).
 function passthroughHeaders(response: Response): Headers {
   const headers = new Headers();
   for (const name of ["content-type", "x-request-id", "retry-after"]) {
@@ -138,8 +159,10 @@ function passthroughHeaders(response: Response): Headers {
  * @param message Human-readable message.
  * @returns The JSON response.
  */
+// Builds an error JSON in the same shape as the backend: {error: {code, message}}.
 function errorResponse(status: number, code: string, message: string): NextResponse {
   return NextResponse.json({ error: { code, message } }, { status });
 }
 
+// Use the same function for all four HTTP methods.
 export { handle as GET, handle as POST, handle as PATCH, handle as DELETE };

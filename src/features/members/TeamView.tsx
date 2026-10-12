@@ -1,3 +1,9 @@
+// The Team screen. It holds the screen state and connects everything.
+// Flutter idea: a StatefulWidget screen that owns search text, sort and page,
+// and passes data down to a child table.
+// Data flow:
+//   typing -> search state -> debounce -> useMembers(params) -> API -> MembersTable
+//   tap Remove -> useRemoveMember -> API -> cache refreshed -> table updates itself
 "use client";
 
 import { useState } from "react";
@@ -30,18 +36,23 @@ const PAGE_SIZE = 10;
  *
  * @returns The team management UI, or nothing while the profile loads.
  */
+// The screen widget.
 export function TeamView() {
   const { data: me } = useMe();
+  // Local screen state (like fields in a State class).
   const [search, setSearch] = useState("");
   const [sortBy, setSortBy] = useState<MemberSortBy>("created_at");
   const [page, setPage] = useState(1);
   const [adding, setAdding] = useState(false);
+  // Wait 300 ms after typing before using the text. Fewer API calls.
   const q = useDebouncedValue(search);
 
+  // The list request. Changing any param here triggers a new request automatically.
   const members = useMembers({ page, pageSize: PAGE_SIZE, q, sortBy, sortOrder: "asc" });
   const changeRole = useChangeRole();
   const removeMember = useRemoveMember();
 
+  // Profile not loaded yet: show nothing. Like returning `SizedBox.shrink()`.
   if (!me) return null;
   const canManage = can(me, "members:manage");
   const actionError = changeRole.error ?? removeMember.error;
@@ -54,6 +65,7 @@ export function TeamView() {
    *
    * @param member The row's member.
    */
+  // Asks 'are you sure?' first. `window.confirm` ~ showDialog with Yes/No.
   function handleRemove(member: Member) {
     if (window.confirm(`Remove ${member.full_name} from the team?`)) {
       removeMember.mutate(member.id);
@@ -66,6 +78,7 @@ export function TeamView() {
    * @param member The row's member.
    * @param role The newly selected role.
    */
+  // Sends the new role to the backend.
   function handleRoleChange(member: Member, role: Role) {
     changeRole.mutate({ memberId: member.id, role });
   }

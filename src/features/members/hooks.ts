@@ -1,3 +1,7 @@
+// Hooks for the team list and team changes.
+// Flutter idea: a MembersRepository + providers. `useMembers` reads. The others write.
+// Data flow: TeamView -> useMembers -> apiFetch -> proxy -> FastAPI -> Page<Member> ->
+//   table.
 "use client";
 
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -6,6 +10,7 @@ import { apiFetch } from "@/lib/api";
 import type { AddMemberInput, Member, MemberListParams, Page, Role } from "@/lib/types";
 
 /** Cache key prefix for member lists (used to invalidate all pages/filters at once). */
+// Cache key prefix. After a change we mark everything with this prefix as old.
 export const MEMBERS_KEY = ["members"] as const;
 
 /**
@@ -18,6 +23,8 @@ export const MEMBERS_KEY = ["members"] as const;
  * @param params Page, size, search text and sorting.
  * @returns Query result whose `data` is the Page<Member>.
  */
+// Reads one page. The cache key includes `params`, so each page/search has its own saved
+//   result. `keepPreviousData` keeps old rows on screen while new ones load.
 export function useMembers(params: MemberListParams) {
   return useQuery({
     queryKey: [...MEMBERS_KEY, params],
@@ -44,6 +51,8 @@ export function useMembers(params: MemberListParams) {
  * @param fn The API call to perform.
  * @returns A configured mutation.
  */
+// Shared helper. After add / role change / remove, it refreshes the member list and the
+//   audit log (`invalidateQueries` = 'this data is old, load it again').
 function useMemberMutation<TInput, TResult>(fn: (input: TInput) => Promise<TResult>) {
   const queryClient = useQueryClient();
   return useMutation({
@@ -60,6 +69,7 @@ function useMemberMutation<TInput, TResult>(fn: (input: TInput) => Promise<TResu
  *
  * @returns Mutation taking an AddMemberInput.
  */
+// POST a new member.
 export function useAddMember() {
   return useMemberMutation((input: AddMemberInput) =>
     apiFetch<Member>("/organizations/current/members", { method: "POST", body: input }),
@@ -71,6 +81,7 @@ export function useAddMember() {
  *
  * @returns Mutation taking `{ memberId, role }`.
  */
+// PATCH a member's role.
 export function useChangeRole() {
   return useMemberMutation(({ memberId, role }: { memberId: string; role: Role }) =>
     apiFetch<Member>(`/organizations/current/members/${memberId}`, { method: "PATCH", body: { role } }),
@@ -82,6 +93,7 @@ export function useChangeRole() {
  *
  * @returns Mutation taking the member id.
  */
+// DELETE a member.
 export function useRemoveMember() {
   return useMemberMutation((memberId: string) =>
     apiFetch<void>(`/organizations/current/members/${memberId}`, { method: "DELETE" }),

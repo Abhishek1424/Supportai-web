@@ -1,3 +1,5 @@
+// Tiny display helpers. Flutter/Dart idea: `DateFormat` and a `capitalize` extension
+//   method.
 /**
  * Format an ISO timestamp from the API for display in the user's locale.
  *

@@ -1,3 +1,4 @@
+// A white box with a title. Flutter idea: `Card(child: ...)`.
 import type { ReactNode } from "react";
 
 /**

@@ -1,3 +1,8 @@
+// The login screen's form. "use client" = runs in the browser because it uses state.
+// Flutter idea: a StatefulWidget with a Form, two TextEditingControllers and a submit
+//   button.
+// Flow: tap Sign in -> useLogin().mutate -> POST /api/auth/login -> cookies set -> go to
+//   /dashboard.
 "use client";
 
 import Link from "next/link";
@@ -20,9 +25,13 @@ import { useLogin } from "./hooks";
  *
  * @returns The form UI.
  */
+// Closest idea: a StatefulWidget. The `use...` lines at the top are its state and services.
 export function LoginForm() {
+  // Navigation. Flutter idea: `Navigator.of(context)` / `context.go(...)`.
   const router = useRouter();
+  // The login 'service'. It knows isPending / isError / error.
   const login = useLogin();
+  // State + setter. Flutter idea: a `String email` field and `setState(() => email = v)`.
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
@@ -31,6 +40,8 @@ export function LoginForm() {
    *
    * @param event The form submit event.
    */
+  // Runs on form submit. `preventDefault` stops the browser reloading the page. Then we
+  //   call the API.
   function handleSubmit(event: FormEvent) {
     event.preventDefault();
     login.mutate({ email, password }, { onSuccess: () => router.replace("/dashboard") });

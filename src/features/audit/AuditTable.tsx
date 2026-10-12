@@ -1,3 +1,5 @@
+// Shows audit rows. Stateless widget idea. React escapes text, so `<script>` in a name is
+//   shown as text, never run.
 import { formatDateTime } from "@/lib/format";
 import type { AuditLogEntry } from "@/lib/types";
 
@@ -7,6 +9,7 @@ import type { AuditLogEntry } from "@/lib/types";
  * @param details Small JSON context stored with the entry (never secrets).
  * @returns e.g. "old_role: agent, new_role: admin", or "" when empty.
  */
+// Turns a details Map into 'key: value, key: value' text.
 export function summariseDetails(details: Record<string, unknown>): string {
   return Object.entries(details)
     .map(([key, value]) => `${key}: ${String(value)}`)
@@ -22,6 +25,7 @@ export function summariseDetails(details: Record<string, unknown>): string {
  * @param props.entries Entries to show.
  * @returns The table or an empty-state message.
  */
+// Table or an empty-state message.
 export function AuditTable({ entries }: { entries: AuditLogEntry[] }) {
   if (entries.length === 0) {
     return <p className="py-8 text-center text-sm text-slate-500">No audit entries found.</p>;

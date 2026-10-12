@@ -1,3 +1,7 @@
+// What is this file?   Safety check for the proxy: which backend URLs may the browser
+//   reach?
+// Rules:               only /api/v1/..., no `..` tricks, and no login/refresh endpoints.
+// Why?                 The proxy must not become an open door to the backend.
 /** The only auth endpoint the browser may reach through the proxy. */
 const ALLOWED_AUTH_PATH = "auth/me";
 

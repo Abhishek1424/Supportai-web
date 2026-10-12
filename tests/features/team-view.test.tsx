@@ -1,3 +1,5 @@
+// Screen tests for Team: what each role sees, add dialog, remove with confirm, backend rule
+//   errors.
 import { screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 

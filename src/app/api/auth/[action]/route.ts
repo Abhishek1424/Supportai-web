@@ -1,3 +1,11 @@
+// What is this file?   A SERVER endpoint of the Next.js app: POST /api/auth/login |
+//   register | logout.
+// Why?                 It talks to FastAPI, then saves the tokens in httpOnly cookies and
+//                      returns only {ok: true}. The browser never sees the tokens.
+// Flutter/Dart idea:   Next.js `route.ts` files = API handlers, like a tiny `shelf` server
+//                      inside the web app. The folder name is the URL. `[action]` is a URL
+//                      parameter, like `/api/auth/:action`.
+// Flow:  LoginForm -> useLogin -> authFetch('login') -> THIS FILE -> FastAPI /auth/login
 /**
  * Session endpoints: POST /api/auth/login | register | logout.
  *
@@ -16,9 +24,12 @@ import {
   type TokenPair,
 } from "@/lib/server/session";
 
+// The second argument Next gives us: the URL params. In Next 16 `params` is a Promise, so
+//   we `await` it.
 type Context = { params: Promise<{ action: string }> };
 
 /** Backend paths for the two actions that exchange credentials for tokens. */
+// Which actions send credentials to the backend and get tokens back.
 const CREDENTIAL_ENDPOINTS: Record<string, string> = {
   login: "/api/v1/auth/login",
   register: "/api/v1/auth/register",
@@ -40,6 +51,10 @@ const CREDENTIAL_ENDPOINTS: Record<string, string> = {
  * @param context Route params; `action` is the last URL segment.
  * @returns JSON response with cookies set or cleared.
  */
+// Next.js calls the function named after the HTTP method (POST, GET...).
+// Flow (login/register): CSRF check -> forward JSON to FastAPI -> on error, pass the
+// error JSON through -> on success, set cookies and return {ok: true}.
+// Flow (logout): ask backend to revoke the token, then ALWAYS clear the cookies.
 export async function POST(request: NextRequest, context: Context): Promise<NextResponse> {
   if (!isSameOriginRequest(request.method, request.headers.get("origin"), request.headers.get("host"))) {
     return NextResponse.json(

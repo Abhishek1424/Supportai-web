@@ -1,3 +1,4 @@
+// Screen for /settings. Only renders SettingsView.
 import { SettingsView } from "@/features/organization/SettingsView";
 
 /** /settings: Settings screen (all logic lives in the feature component). */

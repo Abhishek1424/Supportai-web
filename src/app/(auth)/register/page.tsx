@@ -1,3 +1,4 @@
+// Screen for /register. Shows <RegisterForm />.
 import { RegisterForm } from "@/features/auth/RegisterForm";
 
 /** /register: create a new business account and workspace. */

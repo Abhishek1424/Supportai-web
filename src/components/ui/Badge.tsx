@@ -1,3 +1,5 @@
+// Small coloured label for a role. Flutter idea: a `Chip` widget. The Map picks the colour
+//   by role.
 import type { Role } from "@/lib/types";
 import { capitalize } from "@/lib/format";
 

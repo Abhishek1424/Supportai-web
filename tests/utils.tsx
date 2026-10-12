@@ -1,3 +1,12 @@
+// Helpers shared by tests: fake users, fake API (mockFetch) and a cache wrapper.
+//
+// Test guide (Flutter idea):
+//   describe(...)  ~ group(...)          it(...)  ~ test(...)         expect(...) ~
+//     expect(...)
+//   vi.fn / vi.stubGlobal ~ a mock (like mockito)   render(<X />) ~ tester.pumpWidget(X())
+//   screen.getByRole/getByText ~ find.byType/find.text   userEvent.click/type ~
+//     tester.tap/enterText
+//   await screen.findBy... ~ await tester.pumpAndSettle() then find
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { render } from "@testing-library/react";
 import type { ReactElement, ReactNode } from "react";
@@ -61,6 +70,8 @@ export interface MockReply {
  * @param routes Map of "GET /api/proxy/auth/me" -> reply (or a function returning one).
  * @returns The fetch mock, so tests can assert on the calls made.
  */
+// Replaces the real network with a fake. Pass a map like 'GET /path' -> response. Like a
+//   MockDio.
 export function mockFetch(routes: Record<string, MockReply | ((init?: RequestInit) => MockReply)>) {
   const fn = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
     const url = new URL(String(input), "http://localhost");
@@ -80,6 +91,8 @@ export function mockFetch(routes: Record<string, MockReply | ((init?: RequestIni
  *
  * @returns A wrapper component for render()/renderHook().
  */
+// Gives the component a fresh data cache, like wrapping a widget in a Provider for a widget
+//   test.
 export function createWrapper() {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: 0 } } });
   return function Wrapper({ children }: { children: ReactNode }) {

@@ -1,3 +1,5 @@
+// Tests that parallel refresh calls share ONE backend call (so the user is not logged out
+//   by mistake).
 import { refreshSession, resetRefreshCacheForTests } from "@/lib/server/session";
 
 const TOKENS = { access_token: "new-access", refresh_token: "new-refresh", expires_in: 900 };

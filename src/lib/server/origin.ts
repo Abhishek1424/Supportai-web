@@ -1,3 +1,8 @@
+// What is this file?   CSRF protection. CSRF = another website tricks the user's browser
+//                      into sending a request to our app, with the user's cookies.
+// Fix:                 for write requests, the `Origin` header must be our own site.
+// Flutter/Dart idea:   not needed in a mobile app (no cookies, no browser). It is a web-
+//   only problem.
 /**
  * CSRF defence for cookie-authenticated routes.
  *
@@ -23,6 +28,7 @@ const SAFE_METHODS = new Set(["GET", "HEAD", "OPTIONS"]);
  * @param host Value of the Host header (or null).
  * @returns True if the request may proceed.
  */
+// GET is always OK. POST/PATCH/DELETE must come from our own host.
 export function isSameOriginRequest(
   method: string,
   origin: string | null,

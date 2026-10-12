@@ -1,3 +1,7 @@
+// Layout for public pages (login, register): a centered white card.
+// `(auth)` in the folder name is a "route group": it shares a layout but does NOT add to
+//   the URL.
+// Flutter idea: a parent `Scaffold` used by several screens.
 import type { ReactNode } from "react";
 
 /**

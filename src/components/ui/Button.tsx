@@ -1,5 +1,17 @@
+// A reusable button. Flutter idea: your own `AppButton` widget wrapping ElevatedButton.
+//
+// React -> Flutter quick map (used in all component files):
+//   component (a function returning UI) ~ a Widget. No class needed.
+//   props (the function parameters)      ~ Widget constructor parameters.
+//   children                             ~ the `child` widget.
+//   useState                             ~ State in a StatefulWidget (`setState`).
+//   useEffect                            ~ initState / dispose logic.
+//   JSX (HTML-like code in the function) ~ the widget tree in `build()`.
+//   When state changes the function runs again, like `build()` after `setState`.
+// These are only similar ideas. They are not exactly the same.
 import type { ButtonHTMLAttributes } from "react";
 
+// Allowed button styles. Dart idea: `enum ButtonVariant { primary, secondary, danger }`.
 type Variant = "primary" | "secondary" | "danger";
 
 const VARIANT_CLASSES: Record<Variant, string> = {
@@ -23,6 +35,8 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
  * @param props Native button props plus `variant` and `loading`.
  * @returns A styled <button>.
  */
+// Props = constructor params. `loading` disables the button so the user cannot tap twice
+//   (like `onPressed: null`).
 export function Button({ variant = "primary", loading, disabled, children, className = "", ...rest }: ButtonProps) {
   return (
     <button

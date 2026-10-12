@@ -1,3 +1,6 @@
+// The frame of every logged-in screen: sidebar, header, sign-out.
+// Flutter idea: a `Scaffold` with a Drawer and AppBar that all screens share.
+// Data flow:  useMe() -> loads /auth/me once -> decides which menu items to show.
 "use client";
 
 import Link from "next/link";
@@ -19,6 +22,7 @@ interface NavItem {
   permission?: Permission;
 }
 
+// The menu. `permission` hides a link when the user does not have it.
 const NAV_ITEMS: NavItem[] = [
   { href: "/dashboard", label: "Dashboard" },
   { href: "/team", label: "Team", permission: "members:read" },
@@ -37,9 +41,13 @@ const NAV_ITEMS: NavItem[] = [
  * @param props.children The current page content.
  * @returns The app shell.
  */
+// `children` = the current screen. Like `Scaffold(body: child)`.
 export function DashboardShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
+  // Gets the current user from the cache/API. Think of a FutureBuilder:
+  //  isLoading ~ ConnectionState.waiting,  error ~ snapshot.hasError,  data ~
+  //    snapshot.data.
   const { data: me, isLoading, error } = useMe();
   const logout = useLogout();
 
@@ -53,6 +61,7 @@ export function DashboardShell({ children }: { children: ReactNode }) {
   }
 
   /** Sign out, then go to the login page (cookies are cleared server-side). */
+  // Calls the logout API, then opens /login. Like `Navigator.pushReplacement`.
   function handleLogout() {
     logout.mutate(undefined, { onSettled: () => router.replace("/login") });
   }

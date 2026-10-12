@@ -1,3 +1,10 @@
+// What is this file?   TypeScript types that describe the JSON from the backend.
+// Why?                 If the backend changes, the compiler shows errors here.
+// Flutter/Dart idea:   your model classes (User, Member, Page<T>).
+//                      A TypeScript `interface` is like a Dart class with only fields.
+//                      No `fromJson` is needed: the JSON object is used as it is.
+//                      (So the types only help while coding. They are not checked at run
+//                        time.)
 /**
  * TypeScript mirrors of the backend's JSON contracts.
  *
@@ -8,6 +15,8 @@
  */
 
 /** Roles a member can hold in an organization (see backend rbac/constants.py). */
+// Dart idea: `enum Role { owner, admin, agent, viewer }`. Here it is a union of allowed
+//   text values.
 export type Role = "owner" | "admin" | "agent" | "viewer";
 
 /** Every role, ordered from most to least powerful (used to build dropdowns). */
@@ -37,6 +46,7 @@ export interface Organization {
 }
 
 /** Response of GET /auth/me: who am I, where, and what may I do. */
+// Answer of GET /auth/me: who I am, my company, my role, and my permissions.
 export interface Me {
   user: User;
   organization: Organization;
@@ -67,6 +77,7 @@ export interface AuditLogEntry {
 }
 
 /** The backend's standard list envelope. */
+// Same as the backend Page<T>. `<T>` is a generic, like Dart `Page<T>`.
 export interface Page<T> {
   items: T[];
   total: number;
@@ -78,6 +89,7 @@ export interface Page<T> {
 export type MemberSortBy = "created_at" | "email" | "full_name" | "role";
 
 /** Query options for the member list. */
+// What the Team screen sends to the list hook: page, search text, sorting.
 export interface MemberListParams {
   page: number;
   pageSize: number;

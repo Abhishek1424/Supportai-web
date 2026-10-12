@@ -1,3 +1,6 @@
+// A dialog on top of the page. Flutter idea: `showDialog` + `AlertDialog`.
+// It closes when the user presses Escape. "use client" = runs in the browser (it uses
+//   effects).
 "use client";
 
 import { useEffect, type ReactNode } from "react";
@@ -14,6 +17,8 @@ import { useEffect, type ReactNode } from "react";
  * @returns The dialog markup.
  */
 export function Modal({ title, onClose, children }: { title: string; onClose: () => void; children: ReactNode }) {
+  // Runs after the component appears. The returned function runs when it disappears.
+  // Flutter idea: add a listener in `initState`, remove it in `dispose`.
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => event.key === "Escape" && onClose();
     window.addEventListener("keydown", onKey);

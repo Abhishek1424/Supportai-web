@@ -1,3 +1,4 @@
+// Hook to rename the company. After success it refreshes the cached profile and audit log.
 "use client";
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -14,6 +15,7 @@ import type { Organization } from "@/lib/types";
  *
  * @returns Mutation taking the new name.
  */
+// Mutation: PATCH /organizations/current.
 export function useUpdateOrganization() {
   const queryClient = useQueryClient();
   return useMutation({

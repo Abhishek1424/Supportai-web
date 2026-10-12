@@ -1,3 +1,5 @@
+// Unit tests for permission helpers. Plain functions, no UI. Like a normal `test()` file in
+//   Dart.
 import { assignableRoles, can, canManageMember } from "@/lib/permissions";
 import { makeMe } from "../utils";
 

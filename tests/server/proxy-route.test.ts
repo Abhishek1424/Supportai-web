@@ -1,3 +1,7 @@
+// Tests the gateway route directly: token header, refresh+retry, blocked endpoints, CSRF,
+//   backend down.
+// `// @vitest-environment node` at the top means: run in a server-like environment, not a
+//   browser.
 // @vitest-environment node
 import { NextRequest } from "next/server";
 

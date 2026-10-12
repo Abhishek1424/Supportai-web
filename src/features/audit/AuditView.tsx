@@ -1,3 +1,5 @@
+// The Audit log screen: filter dropdown + table + pager. Only owners/admins can open it.
+//   Same structure as TeamView.
 "use client";
 
 import { useState } from "react";
@@ -15,6 +17,7 @@ import { useAuditLogs } from "./hooks";
 const PAGE_SIZE = 15;
 
 /** Actions the backend records, for the filter dropdown (see backend audit/constants.py). */
+// Action names for the dropdown. They must match the backend's audit constants.
 const ACTION_FILTERS = [
   "organization.created",
   "organization.updated",
@@ -33,6 +36,7 @@ const ACTION_FILTERS = [
  *
  * @returns The audit log UI.
  */
+// Screen widget. Shows a message if the user lacks `audit:read`.
 export function AuditView() {
   const { data: me } = useMe();
   const [page, setPage] = useState(1);

@@ -1,3 +1,5 @@
+// The '/' page. It has no content. It only redirects to /dashboard. Flutter idea:
+//   `initialRoute` that immediately replaces itself.
 import { redirect } from "next/navigation";
 
 /**

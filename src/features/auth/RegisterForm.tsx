@@ -1,3 +1,5 @@
+// The sign-up form. Same idea as LoginForm but with 4 fields. Creates the company and its
+//   owner.
 "use client";
 
 import Link from "next/link";
@@ -22,9 +24,11 @@ const PASSWORD_MIN_LENGTH = 10;
  *
  * @returns The form UI.
  */
+// Like a StatefulWidget with a Form.
 export function RegisterForm() {
   const router = useRouter();
   const register = useRegister();
+  // One object for all fields. Dart idea: a `Map<String,String>` or a small form model.
   const [form, setForm] = useState({ full_name: "", organization_name: "", email: "", password: "" });
 
   /**
@@ -33,6 +37,8 @@ export function RegisterForm() {
    * @param key Which field of the form state to update.
    * @returns An onChange handler for an input.
    */
+  // Returns a function that updates ONE field. A function that returns a function is a
+  //   closure.
   const update = (key: keyof typeof form) => (e: { target: { value: string } }) =>
     setForm((current) => ({ ...current, [key]: e.target.value }));
 
@@ -41,6 +47,7 @@ export function RegisterForm() {
    *
    * @param event The form submit event.
    */
+  // Prevents page reload, calls register, then goes to /dashboard.
   function handleSubmit(event: FormEvent) {
     event.preventDefault();
     register.mutate(form, { onSuccess: () => router.replace("/dashboard") });

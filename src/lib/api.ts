@@ -1,3 +1,12 @@
+// What is this file?   The API client of the web app. All HTTP calls from React code go
+//   here.
+// Why?                 One place for headers, JSON, errors and "session ended" handling.
+// Flutter/Dart idea:   your `ApiService` / Dio client with an error interceptor.
+//                      `fetch` ~ Dio.get/post. `Promise` ~ Future. `await` ~ await.
+// Data flow:  Widget(component) -> hook -> apiFetch -> /api/proxy/... (Next server) ->
+//   FastAPI
+// IMPORTANT:  the browser NEVER calls FastAPI directly and never holds the token.
+//             The Next server adds the token from a cookie.
 /**
  * Browser-side API client.
  *
@@ -8,10 +17,13 @@
  */
 
 /** Where the Next.js server forwards authenticated API calls. */
+// Like a Dio `baseUrl`. Calls go to our own Next server, not to the backend.
 const PROXY_PREFIX = "/api/proxy";
 const AUTH_PREFIX = "/api/auth";
 
 /** Error codes meaning "your session is gone": the UI must send you to /login. */
+// If the backend returns one of these codes, the login is over and we go to /login. A `Set`
+//   is the same as a Dart Set.
 const SESSION_ERROR_CODES = new Set(["NOT_AUTHENTICATED", "INVALID_TOKEN", "REFRESH_TOKEN_REUSED"]);
 
 /**
@@ -20,6 +32,10 @@ const SESSION_ERROR_CODES = new Set(["NOT_AUTHENTICATED", "INVALID_TOKEN", "REFR
  * Why a class: components can do `err instanceof ApiError` and branch on the
  * stable `code` (e.g. "EMAIL_ALREADY_REGISTERED") instead of parsing messages.
  */
+// Our own error type. Dart idea: `class ApiError implements Exception` with status, code,
+//   message.
+// Components check the `code` text (like "EMAIL_ALREADY_REGISTERED") instead of the
+//   message.
 export class ApiError extends Error {
   /**
    * @param status HTTP status code.
@@ -41,6 +57,8 @@ export class ApiError extends Error {
 }
 
 /** Options accepted by the request helpers. */
+// Optional settings of one call: method, JSON body, query params. Dart idea: named
+//   parameters.
 export interface RequestOptions {
   method?: "GET" | "POST" | "PATCH" | "DELETE";
   /** Will be JSON-encoded. */
@@ -59,6 +77,8 @@ export interface RequestOptions {
  * @param response A non-2xx response.
  * @returns The ApiError to throw.
  */
+// Turns a failed response into an ApiError. Like reading
+//   `DioException.response?.data['error']`.
 export async function toApiError(response: Response): Promise<ApiError> {
   try {
     const body = await response.json();
@@ -78,6 +98,8 @@ export async function toApiError(response: Response): Promise<ApiError> {
  * @param query Raw key/values.
  * @returns "" or "?a=1&b=2".
  */
+// Makes `?page=2&q=abc` from a map and skips empty values. Dart idea: `Uri(queryParameters:
+//   ...)`.
 export function buildQuery(query?: RequestOptions["query"]): string {
   if (!query) return "";
   const params = new URLSearchParams();
@@ -104,6 +126,10 @@ export function buildQuery(query?: RequestOptions["query"]): string {
  * @returns The parsed response body.
  * @throws ApiError
  */
+// The core function. `<T>` = generic return type, like `Future<T> request<T>()`.
+// Flow: send -> network error? throw ApiError -> not 2xx? throw ApiError
+//       (and go to /login if the session ended) -> else return the JSON.
+// `window.location.assign('/login')` ~ `Navigator.pushReplacementNamed('/login')`.
 async function request<T>(
   url: string,
   options: RequestOptions,
@@ -139,6 +165,7 @@ async function request<T>(
  * @returns The parsed response body.
  * @throws ApiError
  */
+// Use this for normal calls after login. Example: `apiFetch<Me>('/auth/me')`.
 export function apiFetch<T>(path: string, options: RequestOptions = {}): Promise<T> {
   return request<T>(`${PROXY_PREFIX}${path}`, options, true);
 }
@@ -151,6 +178,8 @@ export function apiFetch<T>(path: string, options: RequestOptions = {}): Promise
  * @returns Nothing useful: on success the server has set the session cookies.
  * @throws ApiError, e.g. INVALID_CREDENTIALS
  */
+// Only for login / register / logout. The server sets cookies; no token comes back to
+//   JavaScript.
 export function authFetch(action: "login" | "register" | "logout", body?: unknown): Promise<void> {
   return request<void>(`${AUTH_PREFIX}/${action}`, { method: "POST", body }, false);
 }
@@ -165,6 +194,8 @@ export function authFetch(action: "login" | "register" | "logout", body?: unknow
  * @param error Whatever was thrown (usually an ApiError).
  * @returns A short, user-facing message.
  */
+// Turns any error into short text safe for the user. Components call it to fill the red
+//   Alert box.
 export function getErrorMessage(error: unknown): string {
   if (error instanceof ApiError) {
     const first = error.details?.[0];

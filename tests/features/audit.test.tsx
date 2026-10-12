@@ -1,3 +1,4 @@
+// Tests the audit table (including the XSS safety check) and the permission message.
 import { render, screen } from "@testing-library/react";
 
 import { AuditTable, summariseDetails } from "@/features/audit/AuditTable";

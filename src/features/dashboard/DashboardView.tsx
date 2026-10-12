@@ -1,3 +1,6 @@
+// The home screen: company name, my role, team size, recent activity.
+// Team size trick: ask for a page of size 1 and read `total` (no need to download
+//   everyone).
 "use client";
 
 import { Card } from "@/components/ui/Card";
@@ -17,6 +20,7 @@ import { can } from "@/lib/permissions";
  *
  * @returns The overview UI.
  */
+// Screen widget. It uses three hooks, like three providers read in one `build`.
 export function DashboardView() {
   const { data: me } = useMe();
   const members = useMembers({ page: 1, pageSize: 1, q: "", sortBy: "created_at", sortOrder: "asc" });

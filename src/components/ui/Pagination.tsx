@@ -1,3 +1,6 @@
+// Previous / Next buttons with '1-10 of 42'. Flutter idea: a small pager row widget. It
+//   does not load data itself; the parent passes `onPageChange`, like a callback
+//   `ValueChanged<int>`.
 import { Button } from "./Button";
 
 interface PaginationProps {

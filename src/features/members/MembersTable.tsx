@@ -1,3 +1,6 @@
+// The members table. It is a 'dumb' widget: it only shows data and calls callbacks.
+// Flutter idea: a stateless DataTable / ListView where onRoleChange and onRemove are
+//   callbacks.
 "use client";
 
 import { Button } from "@/components/ui/Button";
@@ -31,6 +34,7 @@ interface MembersTableProps {
  * @param props See MembersTableProps.
  * @returns The table, or an empty-state message.
  */
+// Props: the list, my role, and two callbacks.
 export function MembersTable({ members, actorRole, canManage, onRoleChange, onRemove }: MembersTableProps) {
   if (members.length === 0) {
     return <p className="py-8 text-center text-sm text-slate-500">No members match your search.</p>;
@@ -50,6 +54,8 @@ export function MembersTable({ members, actorRole, canManage, onRoleChange, onRe
         </thead>
         <tbody className="divide-y divide-slate-100">
           {members.map((member) => {
+            // True only if I have the permission AND the row's role is not above mine. Same
+            //   rule as the backend (the backend still enforces it).
             const editable = canManage && canManageMember(actorRole, member.role);
             return (
               <tr key={member.id}>

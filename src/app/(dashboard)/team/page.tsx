@@ -1,3 +1,4 @@
+// Screen for /team. Only renders TeamView.
 import { TeamView } from "@/features/members/TeamView";
 
 /** /team: Team screen (all logic lives in the feature component). */

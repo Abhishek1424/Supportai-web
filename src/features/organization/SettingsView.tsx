@@ -1,3 +1,4 @@
+// The Settings screen. Owners/admins can edit; others see read-only fields.
 "use client";
 
 import { useState, type FormEvent } from "react";
@@ -20,9 +21,12 @@ import { useUpdateOrganization } from "./hooks";
  *
  * @returns The settings UI.
  */
+// Screen widget.
 export function SettingsView() {
   const { data: me } = useMe();
   const update = useUpdateOrganization();
+  // `null` means 'the user has typed nothing yet', so we show the saved name. This stops a
+  //   background refresh from erasing what the user is typing.
   const [draft, setDraft] = useState<string | null>(null);
 
   if (!me) return null;

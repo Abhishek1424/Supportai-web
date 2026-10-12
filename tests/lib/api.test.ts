@@ -1,3 +1,5 @@
+// Unit tests for the API client with a fake network. Checks error mapping, redirect to
+//   /login, and JSON handling.
 import { ApiError, apiFetch, authFetch, buildQuery, getErrorMessage, toApiError } from "@/lib/api";
 import { mockFetch } from "../utils";
 

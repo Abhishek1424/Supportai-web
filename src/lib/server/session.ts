@@ -1,3 +1,12 @@
+// What is this file?   SERVER-ONLY helpers: write cookies, call the backend, refresh the
+//   session.
+// Why?                 The tokens live in httpOnly cookies. JavaScript in the browser
+//                      cannot read them. So a script injected into the page cannot steal
+//                        them.
+// Flutter/Dart idea:   like `flutter_secure_storage` + the refresh-token part of your Dio
+//                      interceptor. But it runs on the Next.js server, not in the browser.
+//                      (There is no exact Flutter equivalent. Think of a small "backend for
+//                        the app".)
 /**
  * Server-only helpers for the session cookies and for talking to FastAPI.
  *
@@ -14,12 +23,14 @@ import { NextResponse } from "next/server";
 import { ACCESS_COOKIE, REFRESH_COOKIE } from "@/lib/session-constants";
 
 /** Matches the backend's REFRESH_TOKEN_TTL_DAYS default. The backend is the real authority. */
+// How long the browser keeps the refresh cookie (30 days).
 const REFRESH_COOKIE_MAX_AGE_SECONDS = 30 * 24 * 60 * 60;
 
 /** How long a finished refresh result is reused by late parallel requests (see refreshSession). */
 const REFRESH_REUSE_WINDOW_MS = 10_000;
 
 /** Token response of the backend's login/register/refresh endpoints. */
+// The tokens JSON returned by FastAPI login/refresh.
 export interface TokenPair {
   access_token: string;
   refresh_token: string;
@@ -31,6 +42,8 @@ export interface TokenPair {
  *
  * @returns URL without a trailing slash.
  */
+// Reads BACKEND_URL from the server's environment. Dart idea:
+//   `String.fromEnvironment('BACKEND_URL')`.
 export function backendUrl(): string {
   return (process.env.BACKEND_URL ?? "http://localhost:8000").replace(/\/$/, "");
 }
@@ -42,6 +55,7 @@ export function backendUrl(): string {
  * @param init Standard fetch options.
  * @returns The raw backend Response.
  */
+// Calls FastAPI from the Next server. `cache: 'no-store'` = never reuse an old answer.
 export function backendFetch(path: string, init?: RequestInit): Promise<Response> {
   return fetch(`${backendUrl()}${path}`, { ...init, cache: "no-store" });
 }
@@ -61,6 +75,10 @@ export function backendFetch(path: string, init?: RequestInit): Promise<Response
  * @param tokens Fresh tokens from the backend.
  * @returns The same response, for chaining.
  */
+// Puts the tokens into cookies.
+//  httpOnly = JavaScript cannot read it.   sameSite=lax = other websites cannot send it in
+//    POSTs.
+//  secure = HTTPS only (in production).
 export function setSessionCookies(response: NextResponse, tokens: TokenPair): NextResponse {
   const base = {
     httpOnly: true,
@@ -82,6 +100,7 @@ export function setSessionCookies(response: NextResponse, tokens: TokenPair): Ne
  * @param response The response being returned to the browser.
  * @returns The same response.
  */
+// Delete both cookies (logout or dead session).
 export function clearSessionCookies(response: NextResponse): NextResponse {
   response.cookies.delete(ACCESS_COOKIE);
   response.cookies.delete(REFRESH_COOKIE);
@@ -100,6 +119,11 @@ export function clearSessionCookies(response: NextResponse): NextResponse {
  * Limitation: this is per Node.js process. Running several server instances
  * needs sticky sessions or a shared lock (e.g. Redis).
  */
+// Problem: the page can send many API calls at once. If the token expired, ALL of them
+// would call refresh with the same refresh token. The backend treats a second use as theft
+// and logs the user out. So we keep one running refresh per token in this Map and share it.
+// Dart idea: a `Map<String, Future<TokenPair?>>` so many callers `await` the same Future.
+// (Works for one server process only.)
 const refreshes = new Map<string, Promise<TokenPair | null>>();
 
 /**
@@ -114,6 +138,8 @@ const refreshes = new Map<string, Promise<TokenPair | null>>();
  * @param refreshToken The refresh token from the cookie.
  * @returns New tokens, or null if the backend rejected the token.
  */
+// If a refresh for this token is already running (or just finished), return the same
+//   Future.
 export function refreshSession(refreshToken: string): Promise<TokenPair | null> {
   const existing = refreshes.get(refreshToken);
   if (existing) return existing;
@@ -131,6 +157,8 @@ export function refreshSession(refreshToken: string): Promise<TokenPair | null> 
  * @param refreshToken The refresh token to exchange.
  * @returns The new tokens, or null on any failure (invalid, expired, backend down).
  */
+// The real call to FastAPI /auth/refresh. Returns null on any failure (like a try/catch
+//   returning null).
 async function requestRefresh(refreshToken: string): Promise<TokenPair | null> {
   try {
     const response = await backendFetch("/api/v1/auth/refresh", {

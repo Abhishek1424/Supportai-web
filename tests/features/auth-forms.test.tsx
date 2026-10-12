@@ -1,3 +1,13 @@
+// Widget-style tests for login and register forms: type, tap, check navigation and error
+//   text.
+//
+// Test guide (Flutter idea):
+//   describe(...)  ~ group(...)          it(...)  ~ test(...)         expect(...) ~
+//     expect(...)
+//   vi.fn / vi.stubGlobal ~ a mock (like mockito)   render(<X />) ~ tester.pumpWidget(X())
+//   screen.getByRole/getByText ~ find.byType/find.text   userEvent.click/type ~
+//     tester.tap/enterText
+//   await screen.findBy... ~ await tester.pumpAndSettle() then find
 import { screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 

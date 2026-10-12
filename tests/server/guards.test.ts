@@ -1,3 +1,4 @@
+// Tests for the proxy path allow-list and the CSRF origin check. Pure functions.
 import { isSameOriginRequest } from "@/lib/server/origin";
 import { buildBackendPath } from "@/lib/server/proxy-path";
 

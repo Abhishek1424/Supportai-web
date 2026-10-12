@@ -1,3 +1,5 @@
+// A message box (red for errors, green for success). Flutter idea: a small `ErrorBanner`
+//   widget. `role="alert"` makes screen readers read it.
 import type { ReactNode } from "react";
 
 /**

@@ -1,3 +1,5 @@
+// Tests the data hooks alone (no screen). `renderHook` runs a hook like a provider in a
+//   test.
 import { renderHook, waitFor } from "@testing-library/react";
 
 import { useMembers, useRemoveMember } from "@/features/members/hooks";

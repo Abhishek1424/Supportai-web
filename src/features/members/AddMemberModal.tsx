@@ -1,3 +1,5 @@
+// Dialog to add a person. Flutter idea: an AlertDialog with a Form. It shows only the roles
+//   you may give.
 "use client";
 
 import { useState, type FormEvent } from "react";
@@ -25,7 +27,10 @@ import { useAddMember } from "./hooks";
  * @param props.onClose Called to dismiss the dialog (also after success).
  * @returns The modal form.
  */
+// `roles` and `onClose` are constructor params. `onClose` is a callback like
+//   `VoidCallback`.
 export function AddMemberModal({ roles, onClose }: { roles: Role[]; onClose: () => void }) {
+  // The 'add member' service with loading/error state.
   const addMember = useAddMember();
   const [email, setEmail] = useState("");
   const [role, setRole] = useState<Role>(roles[roles.length - 1] ?? "viewer");
@@ -37,6 +42,8 @@ export function AddMemberModal({ roles, onClose }: { roles: Role[]; onClose: () 
    *
    * @param event The form submit event.
    */
+  // Sends only the optional fields that are filled. The `...(x && {y})` trick means 'add
+  //   this key only if x has a value'.
   function handleSubmit(event: FormEvent) {
     event.preventDefault();
     addMember.mutate(
@@ -50,6 +57,8 @@ export function AddMemberModal({ roles, onClose }: { roles: Role[]; onClose: () 
     );
   }
 
+  // Checks the error code. If the person has no account yet, we show a friendly hint
+  //   instead of the raw message.
   const needsDetails =
     addMember.error instanceof ApiError && addMember.error.code === "NEW_USER_DETAILS_REQUIRED";
 

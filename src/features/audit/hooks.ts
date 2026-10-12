@@ -1,3 +1,4 @@
+// Hook for the audit log list. Same pattern as members/hooks.ts.
 "use client";
 
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
@@ -22,6 +23,8 @@ export interface AuditParams {
  * @param enabled Pass false when the user lacks `audit:read`, so we don't make a call that is guaranteed to fail with 403.
  * @returns Query result whose `data` is Page<AuditLogEntry>.
  */
+// `enabled` false = do not call the API at all (used when the user lacks permission). Like
+//   skipping a FutureBuilder.
 export function useAuditLogs(params: AuditParams, enabled = true) {
   return useQuery({
     queryKey: ["audit", params],
